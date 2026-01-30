@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Inventory System</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 40px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        h1 { 
+            color: #333; 
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        nav { 
+            margin: 20px 0; 
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        nav a { 
+            margin: 0 15px; 
+            text-decoration: none; 
+            color: #007bff; 
+            padding: 10px 20px;
+            border: 2px solid #007bff;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            display: inline-block;
+            margin: 5px;
+        }
+        nav a:hover { 
+            background: #007bff; 
+            color: white;
+            transform: translateY(-2px);
+        }
+        .api-list { 
+            background: #f8f9fa; 
+            padding: 30px; 
+            border-radius: 10px; 
+            margin-top: 30px;
+        }
+        .api-list h3 { 
+            margin-top: 0; 
+            color: #333;
+            font-size: 1.5em;
+        }
+        .api-list ul { 
+            list-style-type: none; 
+            padding: 0; 
+        }
+        .api-list li { 
+            margin: 10px 0; 
+            padding: 15px;
+            background: white;
+            border-radius: 5px;
+            border-left: 4px solid #28a745;
+        }
+        .api-list a { 
+            color: #28a745; 
+            font-weight: bold;
+            text-decoration: none;
+        }
+        .api-list a:hover {
+            text-decoration: underline;
+        }
+        .admin-btn {
+            background: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+        .admin-btn:hover {
+            background: #c82333;
+            border-color: #c82333;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+        }
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🏢 Inventory Management System</h1>
+
+    <nav>
+        <a href="/admin/" class="admin-btn">🔧 Admin Panel</a>
+        <a href="/home/">🏠 Home</a>
+        <a href="/employees/">👥 Employees</a>
+        <a href="/customers/">🛍️ Customers</a>
+        <a href="/products/">📦 Products</a>
+        <a href="/suppliers/">🚚 Suppliers</a>
+        <a href="/categories/">📂 Categories</a>
+        <a href="/shippers/">📦 Shippers</a>
+        <a href="/orders/">📋 Orders</a>
+        <a href="/orderdetails/">📄 Order Details</a>
+    </nav>
+
+    <div class="stats">
+        <div class="stat-card">
+            <div class="stat-number">8</div>
+            <div class="stat-label">API Endpoints</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">REST</div>
+            <div class="stat-label">API Style</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">Django</div>
+            <div class="stat-label">Framework</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">SQLite</div>
+            <div class="stat-label">Database</div>
+        </div>
+    </div>
+
+    <div class="api-list">
+        <h3>🔗 Available API Endpoints:</h3>
+        <ul>
+            <li><a href="/employees/" target="_blank">GET /employees/</a> - List all employees</li>
+            <li><a href="/customers/" target="_blank">GET /customers/</a> - List all customers</li>
+            <li><a href="/products/" target="_blank">GET /products/</a> - List all products (from database)</li>
+            <li><a href="/suppliers/" target="_blank">GET /suppliers/</a> - List all suppliers</li>
+            <li><a href="/categories/" target="_blank">GET /categories/</a> - List all categories</li>
+            <li><a href="/shippers/" target="_blank">GET /shippers/</a> - List all shippers</li>
+            <li><a href="/orders/" target="_blank">GET /orders/</a> - List all orders</li>
+            <li><a href="/orderdetails/" target="_blank">GET /orderdetails/</a> - List all order details</li>
+        </ul>
+    </div>
+
+    <div style="text-align: center; margin-top: 30px; color: #666;">
+        <p>🚀 Built with Django REST Framework | 📊 Real-time API | 🗄️ SQLite Database</p>
+        <p><a href="{% url 'logout' %}">Logout</a></p>
+    </div>
+</div>
+
+</body>
+</html>
