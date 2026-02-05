@@ -77,6 +77,7 @@ class Suppliers(models.Model):
 class Categories(models.Model):
     CategoryId = models.AutoField(primary_key=True, db_column='categoryid')
     CategoryName = models.CharField(max_length=200, db_column='categoryname')
+    Description = models.TextField(max_length=200, db_column='description')
     
     class Meta:
         db_table = "categories"
@@ -107,7 +108,7 @@ class Products(models.Model):
 
 class Shippers(models.Model):
     ShipperId = models.AutoField(primary_key=True, db_column='ShipperID')
-    CompanyName = models.CharField(max_length=200, db_column='ShipperName')
+    ShipperName = models.CharField(max_length=200, db_column='ShipperName')
     Phone = models.CharField(max_length=200, db_column='Phone')
 
     class Meta:
@@ -117,7 +118,7 @@ class Shippers(models.Model):
         verbose_name_plural = "Shippers"
 
     def __str__(self):
-        return self.CompanyName
+        return self.ShipperName
     
 
 class Order_Details(models.Model):

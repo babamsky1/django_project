@@ -1,7 +1,7 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from ..models import Products
+from ..models import Products, Suppliers, Categories
 from ..serializers import ProductsSerializer, ProductsCreateSerializer, ProductsEditSerializer, ProductsDeleteSerializer
 
 
@@ -22,7 +22,7 @@ def products_create(request):
         # Return empty form structure or template info
         return Response({
             "result": "success",
-            "data": serializer.data,
+            "data": {},
             "message": "OK"
         }, status=status.HTTP_200_OK)
     
@@ -33,9 +33,11 @@ def products_create(request):
         try:
             product = serializer.save()
             print(f"Product created: {product}")  # Debug line
+            # Return full product data with relationships
+            full_serializer = ProductsSerializer(product)
             return Response({
                 "result": "success",
-                "data": serializer.data,
+                "data": full_serializer.data,
                 "message": "OK"
             }, status=status.HTTP_201_CREATED)
         except Exception as e:
@@ -65,12 +67,13 @@ def products_edit(request):
             
         product = Products.objects.get(ProductId=id)
         original_name = product.ProductName
-        serializer = ProductsCreateSerializer(product, data=request.data, partial=True)
+        serializer = ProductsEditSerializer(product, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
+            response_serializer = ProductsSerializer(product)
             return Response({
                 "result": "success",
-                "data": serializer.data,
+                "data": response_serializer.data,
                 "previous_product_name": original_name,
                 "message": "OK"
             }, status=status.HTTP_200_OK)
@@ -80,10 +83,11 @@ def products_edit(request):
             "message": "Bad Request"
         }, status=status.HTTP_400_BAD_REQUEST)
     except Products.DoesNotExist:
-        return Response({
+        return Response({           
             "result": "error",
             "message": "Product not found"
         }, status=status.HTTP_404_NOT_FOUND)
+
         
 @api_view(['DELETE'])
 def products_delete(request):
@@ -107,4 +111,28 @@ def products_delete(request):
         return Response({
             "result": "error",
             "message": "Product not found"
+        }, status=status.HTTP_404_NOT_FOUND)
+        
+@api_view(['DELETE'])
+def products_bulk_delete(request):
+    try:
+        ids = request.data.get('ids')
+        if not ids:
+            return Response({
+                "result": "error",
+                "message": "IDs are required in request body"
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+        products = Products.objects.filter(ProductId__in=ids)
+        products_count = products.count()
+        products.delete()
+        return Response({
+            "result": "success",
+            "data": {"ids": ids, "deleted": True, "products_count": products_count},
+            "message": "Products deleted successfully"
+        }, status=status.HTTP_200_OK)
+    except Products.DoesNotExist:
+        return Response({
+            "result": "error",
+            "message": "Products not found"
         }, status=status.HTTP_404_NOT_FOUND)

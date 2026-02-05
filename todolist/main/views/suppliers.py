@@ -108,3 +108,28 @@ def suppliers_delete(request):
             "result": "error",
             "message": "Supplier not found"
         }, status=status.HTTP_404_NOT_FOUND)
+        
+@api_view(['POST'])  # ← Match frontend POST
+def suppliers_bulk_delete(request):
+    try:
+        ids = request.data.get('ids')
+        if not ids:
+            return Response({
+                "result": "error",
+                "message": "IDs are required in request body"
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+        suppliers = Suppliers.objects.filter(SupplierId__in=ids)
+        suppliers_count = suppliers.count()
+        suppliers.delete()
+        return Response({
+            "result": "success",
+            "data": {"ids": ids, "deleted": True, "suppliers_count": suppliers_count},
+            "message": "Suppliers deleted successfully"
+        }, status=status.HTTP_200_OK)
+    except Suppliers.DoesNotExist:
+        return Response({
+            "result": "error",
+            "message": "Suppliers not found"
+        }, status=status.HTTP_404_NOT_FOUND)
+

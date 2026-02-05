@@ -4,26 +4,35 @@ from django.contrib.auth.hashers import make_password
 
 # =========Employees Serializers=========
 class EmployeesSerializer(serializers.ModelSerializer):
+    
     class Meta:
         model = Employees
-        fields = '__all__'
+        fields = ['EmployeeId', 'FirstName', 'LastName', 'BirthDate', 'Photo', 'Notes']
         
 class EmployeesCreateSerializer(serializers.ModelSerializer):
+    
     class Meta:
         model = Employees
-        fields = ['FirstName', 'LastName', 'BirthDate', 'Photo', 'Notes']
+        fields = ['EmployeeId', 'FirstName', 'LastName', 'BirthDate', 'Photo', 'Notes']
         
 class EmployeesEditSerializer(serializers.ModelSerializer):
+    
     class Meta:
         model = Employees
-        fields = ['FirstName', 'LastName', 'BirthDate', 'Photo', 'Notes']
+        fields = ['EmployeeId', 'FirstName', 'LastName', 'BirthDate', 'Photo', 'Notes']
         
 class EmployeesDeleteSerializer(serializers.ModelSerializer):
-    EmployeeId = serializers.CharField(read_only=True)
     
     class Meta:
         model = Employees
         fields = ['EmployeeId', 'FirstName', 'LastName'] 
+        
+class EmployeesBulkDeleteSerializer(serializers.ModelSerializer):
+    EmployeeId = serializers.CharField(read_only=True)
+    
+    class Meta:
+        model = Employees
+        fields = ['EmployeeId'] 
 
 # =========Customers Serializers=========
 class CustomersSerializer(serializers.ModelSerializer):
@@ -48,144 +57,169 @@ class CustomersDeleteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customers
         fields = ['CustomerId', 'CustomerName', 'ContactName', 'City', 'Address', 'PostalCode', 'Country'] 
+        
+class CustomersBulkDeleteSerializer(serializers.ModelSerializer):
+    CustomerId = serializers.CharField(read_only=True)
+    
+    class Meta:
+        model = Customers
+        fields = ['CustomerId'] 
 
-# =========Suppliers Serializers=========
+# Suppliers Serializers
 class SuppliersSerializer(serializers.ModelSerializer):
-    companyName = serializers.CharField(source='SupplierName')
-    contactName = serializers.CharField(source='ContactName')
-    address = serializers.SerializerMethodField()
-    
-    class Meta:
-        model = Suppliers
-        fields = ['SupplierId', 'companyName', 'contactName', 'address']
-    
-    def get_address(self, obj):
-        return {
-            'street': obj.Address,
-            'city': obj.City,
-            'postalCode': obj.PostalCode,
-            'country': obj.Country,
-            'phone': obj.Phone
-        }
-        
-class SuppliersCreateSerializer(serializers.ModelSerializer):
-    companyName = serializers.CharField(write_only=True, required=False)
-    contactName = serializers.CharField(write_only=True, required=False)
-    address = serializers.DictField(write_only=True, required=False)
-    
-    class Meta:
-        model = Suppliers
-        fields = ['SupplierId', 'SupplierName', 'ContactName', 'Address', 'City', 'PostalCode', 'Country', 'Phone', 'companyName', 'contactName', 'address']
-        extra_kwargs = {
-            'SupplierName': {'required': False},
-            'ContactName': {'required': False},
-            'Address': {'required': False},
-            'City': {'required': False},
-            'PostalCode': {'required': False},
-            'Country': {'required': False},
-            'Phone': {'required': False},
-        }
-    
-    def validate(self, data):
-        # Handle nested field names
-        if 'companyName' in data:
-            data['SupplierName'] = data.pop('companyName')
-        if 'contactName' in data:
-            data['ContactName'] = data.pop('contactName')
-        
-        # Handle nested address
-        address_data = data.pop('address', {})
-        if address_data:
-            data['Address'] = address_data.get('street', data.get('Address', ''))
-            data['City'] = address_data.get('city', data.get('City', ''))
-            data['PostalCode'] = address_data.get('postalCode', data.get('PostalCode', ''))
-            data['Country'] = address_data.get('country', data.get('Country', ''))
-            data['Phone'] = address_data.get('phone', data.get('Phone', ''))
-        
-        # Validate required fields after transformation
-        required_fields = ['SupplierName', 'ContactName', 'Address', 'City', 'PostalCode', 'Country', 'Phone']
-        for field in required_fields:
-            if not data.get(field):
-                raise serializers.ValidationError({field: 'This field is required.'})
-        
-        return data
-        
-class SuppliersEditSerializer(serializers.ModelSerializer):
-    
+
     class Meta:
         model = Suppliers
         fields = ['SupplierId', 'SupplierName', 'ContactName', 'Address', 'City', 'PostalCode', 'Country', 'Phone']
-        
+
+
+# Suppliers Create Serializers
+class SuppliersCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Suppliers
+        fields = ['SupplierId', 'SupplierName', 'ContactName', 'Address', 'City', 'PostalCode', 'Country', 'Phone']
+        extra_kwargs = {field: {'required': False} for field in ['ContactName', 'Address', 'City', 'PostalCode', 'Country', 'Phone']}
+
+
+# Suppliers Edit Serializers
+class SuppliersEditSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Suppliers
+        fields = ['SupplierId', 'SupplierName', 'ContactName', 'Address', 'City', 'PostalCode', 'Country', 'Phone']
+
+
+# Suppliers Delete Serializers
 class SuppliersDeleteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Suppliers
+        fields = ['SupplierId']
+        
+class SuppliersBulkDeleteSerializer(serializers.ModelSerializer):
+    SupplierId = serializers.CharField(read_only=True)
     
     class Meta:
         model = Suppliers
-        fields = ['SupplierId', 'SupplierName', 'ContactName', 'Address', 'City', 'PostalCode', 'Country', 'Phone'] 
+        fields = ['SupplierId'] 
+        
         
 # =========Categories Serializers=========
 
 class CategoriesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Categories
-        fields = ['CategoryId', 'CategoryName']
+        fields = ['CategoryId', 'CategoryName', 'Description']
         
 class CategoriesCreateSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Categories
-        fields = ['CategoryId', 'CategoryName']
+        fields = ['CategoryId', 'CategoryName', 'Description']
         
 class CategoriesEditSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Categories
-        fields = ['CategoryId', 'CategoryName']
+        fields = ['CategoryId', 'CategoryName', 'Description']
         
 class CategoriesDeleteSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Categories
-        fields = ['CategoryId', 'CategoryName'] 
+        fields = ['CategoryId', 'CategoryName', 'Description'] 
+        
+class CategoriesBulkDeleteSerializer(serializers.ModelSerializer):
+    CategoryId = serializers.CharField(read_only=True)
+    
+    class Meta:
+        model = Categories
+        fields = ['CategoryId', 'CategoryName', 'Description'] 
         
 
 # =========Products Serializers=========
     
 class ProductsSerializer(serializers.ModelSerializer):
-    supplier = serializers.SerializerMethodField()
-    category = serializers.SerializerMethodField()
+    Supplier = serializers.SerializerMethodField()
+    Category = serializers.SerializerMethodField()
     
     class Meta:
         model = Products
         fields = [
-            'ProductId', 'ProductName', 'supplier', 'category', 
+            'ProductId', 'ProductName', 'Supplier', 'Category', 
             'Price'
         ]
     
-    def get_supplier(self, obj):
-        return {
-            'SupplierId': obj.Supplier.SupplierId,
-            'companyName': obj.Supplier.SupplierName
-        }
+    def get_Supplier(self, obj):
+        if hasattr(obj, 'Supplier') and obj.Supplier:
+            return {
+                'SupplierId': obj.Supplier.SupplierId,
+                'SupplierName': obj.Supplier.SupplierName
+            }
+        return None
     
-    def get_category(self, obj):
-        return {
-            'CategoryId': obj.Category.CategoryId,
-            'CategoryName': obj.Category.CategoryName
-        }
+    def get_Category(self, obj):
+        if hasattr(obj, 'Category') and obj.Category:
+            return {
+                'CategoryId': obj.Category.CategoryId,
+                'CategoryName': obj.Category.CategoryName,
+                'Description': obj.Category.Description
+            }
+        return None
         
 class ProductsCreateSerializer(serializers.ModelSerializer):
+    Supplier = serializers.PrimaryKeyRelatedField(queryset=Suppliers.objects.all())
+    Category = serializers.PrimaryKeyRelatedField(queryset=Categories.objects.all())
     
     class Meta:
         model = Products
         fields = ['ProductId', 'ProductName', 'Supplier', 'Category', 'Price']
         
 class ProductsEditSerializer(serializers.ModelSerializer):
+    Supplier = serializers.PrimaryKeyRelatedField(queryset=Suppliers.objects.all(), required=False)
+    Category = serializers.PrimaryKeyRelatedField(queryset=Categories.objects.all(), required=False)
     
     class Meta:
         model = Products
         fields = ['ProductId', 'ProductName', 'Supplier', 'Category', 'Price']
+    
+    def validate_Supplier(self, value):
+        if value is None:
+            supplier_data = self.initial_data.get('Supplier')
+            if isinstance(supplier_data, dict):
+                try:
+                    return Suppliers.objects.get(SupplierId=supplier_data['SupplierId'])
+                except Suppliers.DoesNotExist:
+                    raise serializers.ValidationError("Supplier not found")
+            elif supplier_data:
+                try:
+                    return Suppliers.objects.get(SupplierId=supplier_data)
+                except Suppliers.DoesNotExist:
+                    raise serializers.ValidationError("Supplier not found")
+        return value
+    
+    def validate_Category(self, value):
+        if value is None:
+            category_data = self.initial_data.get('Category')
+            if isinstance(category_data, dict):
+                try:
+                    return Categories.objects.get(CategoryId=category_data['CategoryId'])
+                except Categories.DoesNotExist:
+                    raise serializers.ValidationError("Category not found")
+            elif category_data:
+                try:
+                    return Categories.objects.get(CategoryId=category_data)
+                except Categories.DoesNotExist:
+                    raise serializers.ValidationError("Category not found")
+        return value
         
 class ProductsDeleteSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Products
+        fields = ['ProductId', 'ProductName', 'Supplier', 'Category', 'Price'] 
+        
+class ProductsBulkDeleteSerializer(serializers.ModelSerializer):
+    ProductId = serializers.CharField(read_only=True)
     
     class Meta:
         model = Products
@@ -196,25 +230,32 @@ class ProductsDeleteSerializer(serializers.ModelSerializer):
 class ShippersSerializer(serializers.ModelSerializer):
     class Meta:
         model = Shippers
-        fields = ['ShipperId', 'CompanyName', 'Phone']
+        fields = ['ShipperId', 'ShipperName', 'Phone']
         
 class ShippersCreateSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Shippers
-        fields = ['ShipperId', 'CompanyName', 'Phone']
+        fields = ['ShipperId', 'ShipperName', 'Phone']
         
 class ShippersEditSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Shippers
-        fields = ['ShipperId', 'CompanyName', 'Phone']
+        fields = ['ShipperId', 'ShipperName', 'Phone']
         
 class ShippersDeleteSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Shippers
-        fields = ['ShipperId', 'CompanyName', 'Phone'] 
+        fields = ['ShipperId', 'ShipperName', 'Phone'] 
+        
+class ShippersBulkDeleteSerializer(serializers.ModelSerializer):
+    ShipperId = serializers.CharField(read_only=True)
+    
+    class Meta:
+        model = Shippers
+        fields = ['ShipperId', 'ShipperName', 'Phone'] 
 
 # =========Orders Serializers=========
 
@@ -245,6 +286,13 @@ class OrdersDeleteSerializer(serializers.ModelSerializer):
         model = Orders
         fields = ['OrderId', 'Customer', 'Employee', 'OrderDate', 'Shipper'] 
 
+class OrdersBulkDeleteSerializer(serializers.ModelSerializer):
+    OrderId = serializers.CharField(read_only=True)
+    
+    class Meta:
+        model = Orders
+        fields = ['OrderId', 'Customer', 'Employee', 'OrderDate', 'Shipper'] 
+
 # =========Order Details Serializers=========
 
 class OrderDetailsSerializer(serializers.ModelSerializer):
@@ -268,6 +316,13 @@ class OrderDetailsEditSerializer(serializers.ModelSerializer):
         fields = ['OrderDetailId', 'Order', 'Product', 'Quantity']
         
 class OrderDetailsDeleteSerializer(serializers.ModelSerializer):
+    OrderDetailId = serializers.CharField(read_only=True)
+    
+    class Meta:
+        model = Order_Details
+        fields = ['OrderDetailId', 'Order', 'Product', 'Quantity'] 
+        
+class OrderDetailsBulkDeleteSerializer(serializers.ModelSerializer):
     OrderDetailId = serializers.CharField(read_only=True)
     
     class Meta:

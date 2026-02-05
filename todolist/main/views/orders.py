@@ -87,3 +87,27 @@ def orders_delete(request):
             "result": "error",
             "message": "Order not found"
         }, status=status.HTTP_404_NOT_FOUND)
+        
+@api_view(['DELETE'])
+def orders_bulk_delete(request):
+    try:
+        ids = request.data.get('ids')
+        if not ids:
+            return Response({
+                "result": "error",
+                "message": "IDs are required in request body"
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+        orders = Orders.objects.filter(OrderId__in=ids)
+        orders_count = orders.count()
+        orders.delete()
+        return Response({
+            "result": "success",
+            "data": {"ids": ids, "deleted": True, "orders_count": orders_count},
+            "message": "Orders deleted successfully"
+        }, status=status.HTTP_200_OK)
+    except Orders.DoesNotExist:
+        return Response({
+            "result": "error",
+            "message": "Orders not found"
+        }, status=status.HTTP_404_NOT_FOUND)

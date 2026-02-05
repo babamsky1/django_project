@@ -1,8 +1,9 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from ..models import Customers
+from ..models import Customers, Orders, Order_Details, Products
 from ..serializers import CustomersSerializer, CustomersCreateSerializer, CustomersEditSerializer
+from django.db.models import Sum, F
 
 
 @api_view(['GET'])
@@ -108,3 +109,50 @@ def customers_delete(request):
             "result": "error",
             "message": "Customer not found"
         }, status=status.HTTP_404_NOT_FOUND)
+        
+@api_view(['DELETE'])
+def customers_bulk_delete(request):
+    try:
+        ids = request.data.get('ids')
+        if not ids:
+            return Response({
+                "result": "error",
+                "message": "IDs are required in request body"
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+        customers = Customers.objects.filter(CustomerId__in=ids)
+        customers_count = customers.count()
+        customers.delete()
+        return Response({
+            "result": "success",
+            "data": {"ids": ids, "deleted": True, "customers_count": customers_count},
+            "message": "Customers deleted successfully"
+        }, status=status.HTTP_200_OK)
+    except Customers.DoesNotExist:
+        return Response({
+            "result": "error",
+            "message": "Customers not found"
+        }, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+def customers_with_totals(request):
+    customers = Customers.objects.all()
+    customers_data = []
+    
+    for customer in customers:
+        # Calculate total amount spent by this customer
+        total_amount = Order_Details.objects.filter(
+            Order__Customer=customer
+        ).aggregate(
+            total=Sum(F('Quantity') * F('Product__Price'))
+        )['total'] or 0
+        
+        customer_data = CustomersSerializer(customer).data
+        customer_data['TotalAmount'] = float(total_amount)
+        customers_data.append(customer_data)
+    
+    return Response({
+        "result": "success",
+        "data": customers_data,
+        "message": "OK"
+    }, status=status.HTTP_200_OK)

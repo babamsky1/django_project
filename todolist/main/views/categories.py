@@ -108,3 +108,33 @@ def categories_delete(request):
             "result": "error",
             "message": "Category not found"
         }, status=status.HTTP_404_NOT_FOUND)
+        
+@api_view(['POST'])  # ← Match frontend POST
+def categories_bulk_delete(request):
+    try:
+        ids = request.data.get('ids')
+        if not ids:
+            return Response({
+                "result": "error",
+                "message": "IDs are required"
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        categories = Categories.objects.filter(CategoryId__in=ids)
+        categories_count = categories.count()   
+        categories.delete()
+        
+        return Response({
+            "result": "success",
+            "data": {
+                "ids": ids,
+                "deleted": True,
+                "categories_count": categories_count
+            },
+            "message": "Categories deleted successfully"
+        }, status=status.HTTP_200_OK)
+        
+    except Exception:
+        return Response({
+            "result": "error", 
+            "message": "Bulk delete failed"
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

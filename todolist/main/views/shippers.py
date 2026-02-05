@@ -64,7 +64,7 @@ def shippers_edit(request):
             }, status=status.HTTP_400_BAD_REQUEST)
             
         shipper = Shippers.objects.get(ShipperId=id)
-        original_name = shipper.CompanyName
+        original_name = shipper.ShipperName
         serializer = ShippersSerializer(shipper, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -96,7 +96,7 @@ def shippers_delete(request):
             }, status=status.HTTP_400_BAD_REQUEST)
             
         shipper = Shippers.objects.get(ShipperId=id)
-        company_name = shipper.CompanyName
+        company_name = shipper.ShipperName
         shipper.delete()
         return Response({
             "result": "success",
@@ -108,3 +108,28 @@ def shippers_delete(request):
             "result": "error",
             "message": "Shipper not found"
         }, status=status.HTTP_404_NOT_FOUND)
+        
+@api_view(['POST'])  # ← Match frontend POST
+def shippers_bulk_delete(request):
+    try:
+        ids = request.data.get('ids')
+        if not ids:
+            return Response({
+                "result": "error",
+                "message": "IDs are required in request body"
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+        shippers = Shippers.objects.filter(ShipperId__in=ids)
+        shippers_count = shippers.count()
+        shippers.delete()
+        return Response({
+            "result": "success",
+            "data": {"ids": ids, "deleted": True, "shippers_count": shippers_count},
+            "message": "Shippers deleted successfully"
+        }, status=status.HTTP_200_OK)
+    except Shippers.DoesNotExist:
+        return Response({
+            "result": "error",
+            "message": "Shippers not found"
+        }, status=status.HTTP_404_NOT_FOUND)
+

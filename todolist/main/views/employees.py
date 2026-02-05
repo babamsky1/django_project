@@ -84,7 +84,12 @@ def employees_edit(request):
             "result": "error",
             "message": "Employee not found"
         }, status=status.HTTP_404_NOT_FOUND)
-        
+    except Exception as e:
+        return Response({
+            "result": "error",
+            "message": f"Internal server error: {str(e)}"
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 @api_view(['DELETE'])
 def employees_delete(request):
     try:
@@ -108,3 +113,28 @@ def employees_delete(request):
             "result": "error",
             "message": "Employee not found"
         }, status=status.HTTP_404_NOT_FOUND)
+        
+@api_view(['DELETE'])
+def employees_bulk_delete(request):
+    try:
+        ids = request.data.get('ids')
+        if not ids:
+            return Response({
+                "result": "error",
+                "message": "IDs are required in request body"
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+        employees = Employees.objects.filter(EmployeeId__in=ids)
+        employees_count = employees.count()
+        employees.delete()
+        return Response({
+            "result": "success",
+            "data": {"ids": ids, "deleted": True, "employees_count": employees_count},
+            "message": "Employees deleted successfully"
+        }, status=status.HTTP_200_OK)
+    except Employees.DoesNotExist:
+        return Response({
+            "result": "error",
+            "message": "Employees not found"
+        }, status=status.HTTP_404_NOT_FOUND)
+
