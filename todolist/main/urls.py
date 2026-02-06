@@ -2,7 +2,7 @@ from django.urls import path
 from .views.home import home as home_view
 from .views.users import users_list, login as login_view, registration, logout as logout_view
 from .views.employees import employees_list, employees_create, employees_edit, employees_delete, employees_bulk_delete
-from .views.customers import customers_list, customers_create, customers_edit, customers_delete, customers_bulk_delete, customers_with_totals
+from .views.customers import customers_list, customers_create, customers_edit, customers_delete, customers_bulk_delete
 from .views.products import products_list, products_create, products_edit, products_delete, products_bulk_delete
 from .views.suppliers import suppliers_list, suppliers_create, suppliers_edit, suppliers_delete, suppliers_bulk_delete
 from .views.categories import categories_list, categories_create, categories_edit, categories_delete, categories_bulk_delete
@@ -26,7 +26,6 @@ urlpatterns = [
     path('api/employees/bulk-delete/', employees_bulk_delete, name='employees_bulk_delete'),
     # Customers
     path('api/customers/', customers_list, name='customers'),
-    path('api/customers/with-totals/', customers_with_totals, name='customers_with_totals'),
     path('api/customers/create/', customers_create, name='customers_create'),
     path('api/customers/edit/', customers_edit, name='customers_edit'),
     path('api/customers/delete/', customers_delete, name='customers_delete'),
@@ -52,6 +51,7 @@ urlpatterns = [
     path('api/orders/edit/', orders_edit, name='orders_edit'),
     path('api/orders/delete/', orders_delete, name='orders_delete'),
     path('api/orders/bulk-delete/', orders_bulk_delete, name='orders_bulk_delete'),
+    
 
     
     # Order Details
@@ -60,6 +60,7 @@ urlpatterns = [
     path('api/orderdetails/edit/', order_details_edit, name='orderdetails_edit'),
     path('api/orderdetails/delete/', order_details_delete, name='orderdetails_delete'),
     path('api/orderdetails/bulk-delete/', order_details_bulk_delete, name='orderdetails_bulk_delete'),
+
     
     # Categories
     path('api/categories/', categories_list, name='categories'),

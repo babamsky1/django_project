@@ -1,13 +1,13 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from ..models import Customers, Orders, Order_Details, Products
+from ..models import Customers
 from ..serializers import CustomersSerializer, CustomersCreateSerializer, CustomersEditSerializer
-from django.db.models import Sum, F
 
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 def customers_list(request):
+    # Standard customers list
     customers = Customers.objects.all()
     serializer = CustomersSerializer(customers, many=True)
 
@@ -133,26 +133,3 @@ def customers_bulk_delete(request):
             "result": "error",
             "message": "Customers not found"
         }, status=status.HTTP_404_NOT_FOUND)
-
-@api_view(['GET'])
-def customers_with_totals(request):
-    customers = Customers.objects.all()
-    customers_data = []
-    
-    for customer in customers:
-        # Calculate total amount spent by this customer
-        total_amount = Order_Details.objects.filter(
-            Order__Customer=customer
-        ).aggregate(
-            total=Sum(F('Quantity') * F('Product__Price'))
-        )['total'] or 0
-        
-        customer_data = CustomersSerializer(customer).data
-        customer_data['TotalAmount'] = float(total_amount)
-        customers_data.append(customer_data)
-    
-    return Response({
-        "result": "success",
-        "data": customers_data,
-        "message": "OK"
-    }, status=status.HTTP_200_OK)

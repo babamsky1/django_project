@@ -77,7 +77,7 @@ class Suppliers(models.Model):
 class Categories(models.Model):
     CategoryId = models.AutoField(primary_key=True, db_column='categoryid')
     CategoryName = models.CharField(max_length=200, db_column='categoryname')
-    Description = models.TextField(max_length=200, db_column='description')
+    Description = models.TextField(max_length=200, blank=True, null=True, db_column='description')
     
     class Meta:
         db_table = "categories"

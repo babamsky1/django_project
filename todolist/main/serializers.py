@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Employees, Customers, Suppliers, Categories, Products, Shippers, Orders, Order_Details, User
 from django.contrib.auth.hashers import make_password
+from django.db.models import Sum, F
 
 # =========Employees Serializers=========
 class EmployeesSerializer(serializers.ModelSerializer):
@@ -36,9 +37,20 @@ class EmployeesBulkDeleteSerializer(serializers.ModelSerializer):
 
 # =========Customers Serializers=========
 class CustomersSerializer(serializers.ModelSerializer):
+    total_spent = serializers.SerializerMethodField()
+    
     class Meta:
         model = Customers
-        fields = ['CustomerId', 'CustomerName', 'ContactName', 'City', 'Address', 'PostalCode', 'Country']
+        fields = ['CustomerId', 'CustomerName', 'ContactName', 'City', 'Address', 'PostalCode', 'Country', 'total_spent']
+    
+    def get_total_spent(self, obj):
+        # Calculate total spent for this customer
+        total = Order_Details.objects.filter(
+            Order__Customer=obj
+        ).aggregate(
+            total=Sum(F('Quantity') * F('Product__Price'))
+        )['total'] or 0
+        return float(total) if total else 0.0
 
         
 class CustomersCreateSerializer(serializers.ModelSerializer):    
@@ -297,23 +309,74 @@ class OrdersBulkDeleteSerializer(serializers.ModelSerializer):
 
 class OrderDetailsSerializer(serializers.ModelSerializer):
     OrderDetailId = serializers.CharField(read_only=True)
+    
+    # Return frontend-friendly field names
+    productId = serializers.IntegerField(source='Product', read_only=True)
+    orderId = serializers.IntegerField(source='Order', read_only=True)
+    quantity = serializers.IntegerField(source='Quantity', read_only=True)
+    
+    # Keep backend fields for compatibility but mark read-only
+    Product = serializers.IntegerField(read_only=True)
+    Order = serializers.IntegerField(read_only=True)
+    Quantity = serializers.IntegerField(read_only=True)
+    
     class Meta:
         model = Order_Details
-        fields = ['OrderDetailId', 'Order', 'Product', 'Quantity']
+        fields = ['OrderDetailId', 'Order', 'Product', 'Quantity', 'productId', 'orderId', 'quantity']
         
 class OrderDetailsCreateSerializer(serializers.ModelSerializer):
     OrderDetailId = serializers.CharField(read_only=True)
     
+    # Accept frontend field names and map to backend fields
+    productId = serializers.IntegerField(write_only=True, required=False)
+    orderId = serializers.IntegerField(write_only=True, required=False)
+    quantity = serializers.IntegerField(write_only=True, required=False)
+    
     class Meta:
         model = Order_Details
-        fields = ['OrderDetailId', 'Order', 'Product', 'Quantity']
+        fields = ['OrderDetailId', 'Order', 'Product', 'Quantity', 'productId', 'orderId', 'quantity']
+        extra_kwargs = {
+            'Order': {'write_only': True},
+            'Product': {'write_only': True},
+            'Quantity': {'write_only': True},
+        }
+    
+    def validate(self, attrs):
+        # Map frontend fields to backend fields
+        if 'productId' in attrs:
+            attrs['Product'] = attrs.pop('productId')
+        if 'orderId' in attrs:
+            attrs['Order'] = attrs.pop('orderId')
+        if 'quantity' in attrs:
+            attrs['Quantity'] = attrs.pop('quantity')
+        return attrs
         
 class OrderDetailsEditSerializer(serializers.ModelSerializer):
     OrderDetailId = serializers.CharField(read_only=True)
     
+    # Accept frontend field names and map to backend fields
+    productId = serializers.IntegerField(write_only=True, required=False)
+    orderId = serializers.IntegerField(write_only=True, required=False)
+    quantity = serializers.IntegerField(write_only=True, required=False)
+    
     class Meta:
         model = Order_Details
-        fields = ['OrderDetailId', 'Order', 'Product', 'Quantity']
+        fields = ['OrderDetailId', 'Order', 'Product', 'Quantity', 'productId', 'orderId', 'quantity']
+        extra_kwargs = {
+            'Order': {'write_only': True},
+            'Product': {'write_only': True},
+            'Quantity': {'write_only': True},
+        }
+    
+    def validate(self, attrs):
+        # Map frontend fields to backend fields
+        if 'productId' in attrs:
+            attrs['Product'] = attrs.pop('productId')
+        if 'orderId' in attrs:
+            attrs['Order'] = attrs.pop('orderId')
+        if 'quantity' in attrs:
+            attrs['Quantity'] = attrs.pop('quantity')
+        return attrs
         
 class OrderDetailsDeleteSerializer(serializers.ModelSerializer):
     OrderDetailId = serializers.CharField(read_only=True)

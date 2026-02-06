@@ -5,16 +5,60 @@ from ..models import Orders
 from ..serializers import OrdersSerializer, OrdersCreateSerializer, OrdersEditSerializer
 
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 def orders_list(request):
-    orders = Orders.objects.all()
-    serializer = OrdersSerializer(orders, many=True)
+    # Check if details are requested (from query param or body)
+    include_details = False
+    
+    if request.method == 'POST':
+        # Check POST body for include parameter
+        include_details = request.data.get('include', '').lower() == 'details'
+    else:
+        # Check query parameter for GET requests
+        include_details = request.GET.get('include', '').lower() == 'details'
+    
+    if include_details:
+        orders = Orders.objects.select_related('Customer', 'Employee', 'Shipper').all()
+        
+        orders_with_details = []
+        for order in orders:
+            order_data = {
+                'OrderId': order.OrderId,
+                'OrderDate': order.OrderDate,
+                'CustomerName': order.Customer.CustomerName if order.Customer else 'Unknown Customer',
+                'EmployeeName': f"{order.Employee.FirstName} {order.Employee.LastName}" if order.Employee else 'Unknown Employee',
+                'ShipperName': order.Shipper.ShipperName if order.Shipper else 'No Shipper',
+                'Customer': {
+                    'CustomerId': order.Customer.CustomerId if order.Customer else None,
+                    'CustomerName': order.Customer.CustomerName if order.Customer else None
+                } if order.Customer else None,
+                'Employee': {
+                    'EmployeeId': order.Employee.EmployeeId if order.Employee else None,
+                    'FirstName': order.Employee.FirstName if order.Employee else None,
+                    'LastName': order.Employee.LastName if order.Employee else None
+                } if order.Employee else None,
+                'Shipper': {
+                    'ShipperId': order.Shipper.ShipperId if order.Shipper else None,
+                    'ShipperName': order.Shipper.ShipperName if order.Shipper else None
+                } if order.Shipper else None
+            }
+            orders_with_details.append(order_data)
+        
+        return Response({
+            "result": "success",
+            "data": orders_with_details,
+            "message": "OK"
+        }, status=status.HTTP_200_OK)
+    else:
+        # Standard orders list
+        orders = Orders.objects.all()
+        serializer = OrdersSerializer(orders, many=True)
 
-    return Response({
-        "result": "success",
-        "data": serializer.data,
-        "message": "OK"
-    }, status=status.HTTP_200_OK)
+        return Response({
+            "result": "success",
+            "data": serializer.data,
+            "message": "OK"
+        }, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 def orders_create(request):
