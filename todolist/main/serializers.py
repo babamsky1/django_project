@@ -273,9 +273,28 @@ class ShippersBulkDeleteSerializer(serializers.ModelSerializer):
 
 class OrdersSerializer(serializers.ModelSerializer):
     OrderId = serializers.CharField(read_only=True)
+    CustomerName = serializers.SerializerMethodField()
+    EmployeeName = serializers.SerializerMethodField()
+    ShipperName = serializers.SerializerMethodField()
+    
     class Meta:
         model = Orders
-        fields = ['OrderId', 'Customer', 'Employee', 'OrderDate', 'Shipper']
+        fields = ['OrderId', 'Customer', 'Employee', 'OrderDate', 'Shipper', 'CustomerName', 'EmployeeName', 'ShipperName']
+    
+    def get_CustomerName(self, obj):
+        if hasattr(obj, 'Customer') and obj.Customer:
+            return obj.Customer.CustomerName
+        return None
+    
+    def get_EmployeeName(self, obj):
+        if hasattr(obj, 'Employee') and obj.Employee:
+            return f"{obj.Employee.FirstName} {obj.Employee.LastName}"
+        return None
+    
+    def get_ShipperName(self, obj):
+        if hasattr(obj, 'Shipper') and obj.Shipper:
+            return obj.Shipper.ShipperName
+        return None
         
 class OrdersCreateSerializer(serializers.ModelSerializer):
     OrderId = serializers.CharField(read_only=True)

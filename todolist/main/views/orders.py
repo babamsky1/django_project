@@ -51,7 +51,7 @@ def orders_list(request):
         }, status=status.HTTP_200_OK)
     else:
         # Standard orders list
-        orders = Orders.objects.all()
+        orders = Orders.objects.select_related('Customer', 'Employee', 'Shipper').all()
         serializer = OrdersSerializer(orders, many=True)
 
         return Response({
